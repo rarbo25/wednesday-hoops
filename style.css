@@ -13,3 +13,5 @@ nav{display:flex;gap:8px;max-width:480px;margin:0 auto;padding:12px 16px 0}
 nav button{margin:0;flex:1}
 .row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #ddd}
 .small{font-size:.85rem;padding:8px 12px;margin:0}
+.row{flex-wrap:wrap}
+.row > div:last-child{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
