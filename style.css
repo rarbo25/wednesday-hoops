@@ -1,0 +1,15 @@
+:root{--orange:#e8590c;--cream:#fff4e0;--black:#161616}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--black);font-family:system-ui,sans-serif}
+header{background:var(--orange);color:var(--cream);padding:24px 16px;border-bottom:6px solid var(--black)}
+h1{margin:0;font-family:Impact,'Arial Black',sans-serif;font-size:2.4rem;line-height:1;letter-spacing:1px}
+main{max-width:480px;margin:0 auto;padding:16px}
+.card{background:#fff;border:3px solid var(--black);border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:4px 4px 0 var(--black)}
+.avatar{width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid var(--black)}
+label{display:block;font-weight:700;margin:10px 0}
+input,select{display:block;width:100%;padding:10px;margin-top:4px;border:2px solid var(--black);border-radius:8px;font-size:1rem;background:#fff}
+button{background:var(--black);color:var(--cream);border:0;border-radius:8px;padding:12px 20px;font-size:1rem;font-weight:700;margin-top:8px}
+nav{display:flex;gap:8px;max-width:480px;margin:0 auto;padding:12px 16px 0}
+nav button{margin:0;flex:1}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #ddd}
+.small{font-size:.85rem;padding:8px 12px;margin:0}
