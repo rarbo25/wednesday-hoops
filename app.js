@@ -105,5 +105,4 @@ function renderMe() {
   };
 }
 
-async function renderAdmin() {
-  show('<main><div class="card">Loading…</div></main>');
+start();
