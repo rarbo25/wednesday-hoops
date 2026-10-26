@@ -66,8 +66,7 @@ async function renderGame(note) {
   };
   let status = '';
   if (notOpen) status = 'RSVPs open for you ' + fmt(opens, { weekday: 'long', hour: 'numeric', minute: '2-digit' }) + ' ET.';
-  else if (my === 'waitlist') status = 'You’re on the waitlist (#' + pos + '). You’ll move up if a spot opens.';
-const hasGuest = rsvps.some(x => x.host_player_id === ME.id); const guestBtn = (my === 'in' && !closed && !hasGuest)    ? '<p><button class="small" data-g="guest">+ Add a guest</button><br><small>A guest only gets in if a spot is open.</small></p>' : '';
+else if (my === 'waitlist') status = (mine.offer_expires_at && new Date(mine.offer_expires_at) > new Date()) ? '🏀 A spot opened for you! Tap In to confirm by ' + fmt(mine.offer_expires_at, { hour: 'numeric', minute: '2-digit' }) + ' ET, or it goes to the next person.' : 'You’re on the waitlist (#' + pos + '). You’ll move up if a spot opens.';const hasGuest = rsvps.some(x => x.host_player_id === ME.id); const guestBtn = (my === 'in' && !closed && !hasGuest)    ? '<p><button class="small" data-g="guest">+ Add a guest</button><br><small>A guest only gets in if a spot is open.</small></p>' : '';
   const adminCard = isAdmin ? `<div class="card"><h3>RSVP for someone</h3>
     <label>Player<select id="who">${players.filter(x => x.active).map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></label>
     <button class="small" data-g="admin" data-s="in">In</button>
