@@ -58,6 +58,8 @@ async function renderGame(note) {
   if (game.status === 'no_court') banner = '🚫 NO COURT THIS WEEK. There is no game.';
 else if (game.status === 'canceled') banner = 'This week’s game is canceled.';
 else if (game.status === 'game_on') banner = '🏀 GAME ON! We have enough players. See you on the court.';
+else if (game.status === 'borderline') banner = 'Borderline: ' + inCount + ' confirmed. Still open. Are you good with 3v3, or can you make it 4v4?';
+else if (game.status === 'needs_call') banner = 'Waiting on the final call. Hang tight.';
   if (banner) banner = `<div class="card" style="background:var(--black);color:var(--cream);font-weight:700">${banner}</div>`;
 
   const dim = (closed || notOpen) ? 'opacity:.4;' : '';
@@ -89,6 +91,7 @@ else if (my === 'waitlist') status = (mine.offer_expires_at && new Date(mine.off
       <p><small>Maybe doesn’t hold a spot. If the top ${cap} fill up, you may be put on the waitlist.</small></p>
       ${guestBtn}
     </div>
+  ${isAdmin && game.status === 'needs_call' ? `<div class="card"><h3>Final call</h3><p>${inCount} confirmed. Play 3v3 or cancel?</p><button data-g="call" data-p="1">Play</button> <button data-g="call" data-p="0">Cancel</button></div>` : ''}
     ${adminCard}
     <div class="card"><h3>In (${inCount}/${cap})</h3>${list('in', byTime)}</div>
     <div class="card"><h3>Waitlist</h3>${list('waitlist', waitSort)}</div>
@@ -115,7 +118,8 @@ else if (my === 'waitlist') status = (mine.offer_expires_at && new Date(mine.off
       res = await sb.rpc('add_guest', { p_game: id, p_name: name });
     } else if (a === 'rmguest') {
       res = await sb.rpc('remove_guest', { p_rsvp: b.dataset.id });
-    } else return;
-    renderGame(res.error ? 'Could not do that: ' + res.error.message : '');
+    } else if (a === 'call') {
+      res = await sb.rpc('make_call', { p_game: id, p_play: b.dataset.p === '1' });
+    } else return;    renderGame(res.error ? 'Could not do that: ' + res.error.message : '');
   };
 }
