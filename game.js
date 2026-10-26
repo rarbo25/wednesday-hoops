@@ -56,7 +56,8 @@ async function renderGame(note) {
 
   let banner = '';
   if (game.status === 'no_court') banner = '🚫 NO COURT THIS WEEK. There is no game.';
-  else if (game.status === 'canceled') banner = 'This week’s game is canceled.';
+else if (game.status === 'canceled') banner = 'This week’s game is canceled.';
+else if (game.status === 'game_on') banner = '🏀 GAME ON! We have enough players. See you on the court.';
   if (banner) banner = `<div class="card" style="background:var(--black);color:var(--cream);font-weight:700">${banner}</div>`;
 
   const dim = (closed || notOpen) ? 'opacity:.4;' : '';
