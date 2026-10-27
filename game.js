@@ -82,4 +82,48 @@ async function renderGame(note) {
   show(`<main>
     ${banner}
     <div class="card">
-      <h2>${f
+      <h2>${fmt(game.start_at, { weekday: 'long', month: 'short', day: 'numeric' })}</h2>
+      <p>${fmt(game.start_at, { hour: 'numeric', minute: '2-digit' })} – ${fmt(game.end_at, { hour: 'numeric', minute: '2-digit' })} ET</p>
+      <p><b>${inCount} of ${cap}</b> spots filled · ${need} needed to play</p>
+    </div>
+    ${note ? `<div class="card">${esc(note)}</div>` : ''}
+    <div class="card">
+      <h3>Are you in?</h3>
+      ${btn('in', 'In')} ${btn('maybe', 'Maybe')} ${btn('out', 'Out')}
+      ${status ? `<p>${esc(status)}</p>` : ''}
+      <p><small>Maybe doesn’t hold a spot. If the top ${cap} fill up, you may be put on the waitlist.</small></p>
+      ${guestBtn}
+    </div>
+    ${game.status === 'borderline' && my === 'in' ? `<div class="card"><h3>3v3 check</h3><p>We’re short of 8. Are you good with 3v3? Or can you make it 4v4, or bring in a friend?</p><button data-g="ok3" data-p="1" style="${mine.ok_3v3 === true ? 'background:var(--orange)' : ''}">Yes, 3v3 works</button> <button data-g="ok3" data-p="0" style="${mine.ok_3v3 === false ? 'background:var(--orange)' : ''}">No</button><p><small>At 3 p.m., the game is on if 6 or more say yes. Otherwise it’s canceled.</small></p></div>` : ''}
+    ${adminCard}
+    <div class="card"><h3>In (${inCount}/${cap})</h3>${list('in', byTime)}</div>
+    <div class="card"><h3>Waitlist</h3>${list('waitlist', waitSort)}</div>
+    <div class="card"><h3>Maybe</h3>${list('maybe', byTime)}</div>
+    <div class="card"><h3>Out</h3>${list('out', byTime)}</div>
+    <div class="card"><h3>No response yet</h3><p>${silent.length ? esc(silent.join(', ')) : 'Everyone has responded'}</p></div>
+  </main>`);
+
+  app.onclick = async e => {
+    const b = e.target.closest('button');
+    if (!b || !b.dataset.g || b.disabled) return;
+    const a = b.dataset.g;
+    let res;
+    if (a === 'rsvp') {
+      res = await sb.rpc('set_rsvp', { p_game: id, p_status: b.dataset.s });
+      if (!res.error && b.dataset.s === 'in' && res.data === 'waitlist') {
+        return renderGame('The list is full, so you’re on the waitlist.');
+      }
+    } else if (a === 'admin') {
+      res = await sb.rpc('set_rsvp', { p_game: id, p_status: b.dataset.s, p_player: document.getElementById('who').value });
+    } else if (a === 'guest') {
+      const name = prompt('Guest’s name?');
+      if (!name || !name.trim()) return;
+      res = await sb.rpc('add_guest', { p_game: id, p_name: name });
+    } else if (a === 'rmguest') {
+      res = await sb.rpc('remove_guest', { p_rsvp: b.dataset.id });
+    } else if (a === 'ok3') {
+      res = await sb.rpc('answer_3v3', { p_game: id, p_ok: b.dataset.p === '1' });
+    } else return;
+    renderGame(res.error ? 'Could not do that: ' + res.error.message : '');
+  };
+}
