@@ -56,10 +56,10 @@ async function renderGame(note) {
 
   let banner = '';
   if (game.status === 'no_court') banner = '🚫 NO COURT THIS WEEK. There is no game.';
-else if (game.status === 'canceled') banner = 'This week’s game is canceled.';
-else if (game.status === 'game_on') banner = '🏀 GAME ON! We have enough players. See you on the court.';
-else if (game.status === 'borderline') banner = 'Borderline: ' + inCount + ' confirmed. Still open. Are you good with 3v3, or can you make it 4v4?';
-else if (game.status === 'needs_call') banner = 'Waiting on the final call. Hang tight.';
+  else if (game.status === 'canceled') banner = 'This week’s game is canceled.';
+  else if (game.status === 'game_on') banner = '🏀 GAME ON! We have enough players. See you on the court.';
+  else if (game.status === 'borderline') banner = 'Borderline: ' + inCount + ' confirmed. Still open. Are you good with 3v3, or can you make it 4v4?';
+  else if (game.status === 'needs_call') banner = 'Waiting on the final call. Hang tight.';
   if (banner) banner = `<div class="card" style="background:var(--black);color:var(--cream);font-weight:700">${banner}</div>`;
 
   const dim = (closed || notOpen) ? 'opacity:.4;' : '';
@@ -69,7 +69,10 @@ else if (game.status === 'needs_call') banner = 'Waiting on the final call. Hang
   };
   let status = '';
   if (notOpen) status = 'RSVPs open for you ' + fmt(opens, { weekday: 'long', hour: 'numeric', minute: '2-digit' }) + ' ET.';
-else if (my === 'waitlist') status = (mine.offer_expires_at && new Date(mine.offer_expires_at) > new Date()) ? '🏀 A spot opened for you! Tap In to confirm by ' + fmt(mine.offer_expires_at, { hour: 'numeric', minute: '2-digit' }) + ' ET, or it goes to the next person.' : 'You’re on the waitlist (#' + pos + '). You’ll move up if a spot opens.';const hasGuest = rsvps.some(x => x.host_player_id === ME.id); const guestBtn = (my === 'in' && !closed && !hasGuest)    ? '<p><button class="small" data-g="guest">+ Add a guest</button><br><small>A guest only gets in if a spot is open.</small></p>' : '';
+  else if (my === 'waitlist') status = (mine.offer_expires_at && new Date(mine.offer_expires_at) > new Date()) ? '🏀 A spot opened for you! Tap In to confirm by ' + fmt(mine.offer_expires_at, { hour: 'numeric', minute: '2-digit' }) + ' ET, or it goes to the next person.' : 'You’re on the waitlist (#' + pos + '). You’ll move up if a spot opens.';
+  const hasGuest = rsvps.some(x => x.host_player_id === ME.id);
+  const guestBtn = (my === 'in' && !closed && !hasGuest)
+    ? '<p><button class="small" data-g="guest">+ Add a guest</button><br><small>A guest only gets in if a spot is open.</small></p>' : '';
   const adminCard = isAdmin ? `<div class="card"><h3>RSVP for someone</h3>
     <label>Player<select id="who">${players.filter(x => x.active).map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join('')}</select></label>
     <button class="small" data-g="admin" data-s="in">In</button>
@@ -79,47 +82,4 @@ else if (my === 'waitlist') status = (mine.offer_expires_at && new Date(mine.off
   show(`<main>
     ${banner}
     <div class="card">
-      <h2>${fmt(game.start_at, { weekday: 'long', month: 'short', day: 'numeric' })}</h2>
-      <p>${fmt(game.start_at, { hour: 'numeric', minute: '2-digit' })} – ${fmt(game.end_at, { hour: 'numeric', minute: '2-digit' })} ET</p>
-      <p><b>${inCount} of ${cap}</b> spots filled · ${need} needed to play</p>
-    </div>
-    ${note ? `<div class="card">${esc(note)}</div>` : ''}
-    <div class="card">
-      <h3>Are you in?</h3>
-      ${btn('in', 'In')} ${btn('maybe', 'Maybe')} ${btn('out', 'Out')}
-      ${status ? `<p>${esc(status)}</p>` : ''}
-      <p><small>Maybe doesn’t hold a spot. If the top ${cap} fill up, you may be put on the waitlist.</small></p>
-      ${guestBtn}
-    </div>
-  ${isAdmin && game.status === 'needs_call' ? `<div class="card"><h3>Final call</h3><p>${inCount} confirmed. Play 3v3 or cancel?</p><button data-g="call" data-p="1">Play</button> <button data-g="call" data-p="0">Cancel</button></div>` : ''}
-    ${adminCard}
-    <div class="card"><h3>In (${inCount}/${cap})</h3>${list('in', byTime)}</div>
-    <div class="card"><h3>Waitlist</h3>${list('waitlist', waitSort)}</div>
-    <div class="card"><h3>Maybe</h3>${list('maybe', byTime)}</div>
-    <div class="card"><h3>Out</h3>${list('out', byTime)}</div>
-    <div class="card"><h3>No response yet</h3><p>${silent.length ? esc(silent.join(', ')) : 'Everyone has responded'}</p></div>
-  </main>`);
-
-  app.onclick = async e => {
-    const b = e.target.closest('button');
-    if (!b || !b.dataset.g || b.disabled) return;
-    const a = b.dataset.g;
-    let res;
-    if (a === 'rsvp') {
-      res = await sb.rpc('set_rsvp', { p_game: id, p_status: b.dataset.s });
-      if (!res.error && b.dataset.s === 'in' && res.data === 'waitlist') {
-        return renderGame('The list is full, so you’re on the waitlist.');
-      }
-    } else if (a === 'admin') {
-      res = await sb.rpc('set_rsvp', { p_game: id, p_status: b.dataset.s, p_player: document.getElementById('who').value });
-    } else if (a === 'guest') {
-      const name = prompt('Guest’s name?');
-      if (!name || !name.trim()) return;
-      res = await sb.rpc('add_guest', { p_game: id, p_name: name });
-    } else if (a === 'rmguest') {
-      res = await sb.rpc('remove_guest', { p_rsvp: b.dataset.id });
-    } else if (a === 'call') {
-      res = await sb.rpc('make_call', { p_game: id, p_play: b.dataset.p === '1' });
-    } else return;    renderGame(res.error ? 'Could not do that: ' + res.error.message : '');
-  };
-}
+      <h2>${f
